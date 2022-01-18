@@ -23,17 +23,13 @@ select LastName from lastname_tab
 
 --3)What product was ordered the most by customers in Germany?
 
-with product_name as
-(SELECT p.ProductName, c.Country as country,count(co.customerID) as customers
-FROM (((OrderDetails o
-left JOIN Products p ON o.ProductID = p.ProductID)
-left JOIN orders co ON o.OrderID = co.OrderID)
-left Join Customers c on co.CustomerID = c.CustomerID)
-where country == 'Germany'
-group by p.ProductName,country order by customers desc limit 1
-)
-select ProductName from product_name
+SELECT p.ProductName, SUM(od.Quantity) AS Quantity
+FROM Orders o, OrderDetails od, Customers c, Products p
+WHERE c.Country = "Germany" AND od.OrderID = o.OrderID AND od.ProductID = p.ProductID AND c.CustomerID = o.CustomerID
+GROUP BY p.ProductID
+ORDER BY Quantity DESC
+LIMIT 1;
 
 -- ************************************* Output ********************************************************************
---ProductName
---Gorgonzola Telino
+--ProductName	Quantity
+--Boston Crab Meat	160
