@@ -1,0 +1,211 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Filtering Data Exapmles.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyMNH2B4K029FrB8LfpulIez",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/prudhvitalluri/-Data-Science-Intern-Challenge/blob/main/Information_Recommender_Systems\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Content Based Filters\n",
+        "\n",
+        "> It id Based on the attributes based on the data. Content based filters are not based on the Feedback.\n",
+        "\n",
+        "> Below is the code for converting cross_tabulated DataFrame qand then select the index\n"
+      ],
+      "metadata": {
+        "id": "JtmE6hZAcm3U"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd"
+      ],
+      "metadata": {
+        "id": "W-04YuCUePh8"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "OT2IytC-cj4H"
+      },
+      "outputs": [],
+      "source": [
+        "# Select only the rows with values in the name column equal to Toy Story\n",
+        "toy_story_genres = movie_genre_df[movie_genre_df['name'] == 'Toy Story']\n",
+        "\n",
+        "# Create cross-tabulated DataFrame from name and genre_list columns\n",
+        "movie_cross_table = pd.crosstab(movie_genre_df['name'], movie_genre_df['genre_list'])\n",
+        "\n",
+        "# Select only the rows with Toy Story as the index\n",
+        "toy_story_genres_ct = movie_cross_table[movie_cross_table.index == 'Toy Story']\n",
+        "print(toy_story_genres_ct)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Select filtering multiple columns in a Dataframe\n",
+        "movie_cross_table.loc[[\"Toy Story\",'Yogi Bear']]"
+      ],
+      "metadata": {
+        "id": "hOescuN5ctDF"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "A specific row from a DataFrame can be selected using ***.loc['row_index']***.\n",
+        "The ***.values*** attribute can be used to convert a pandas Series to a numpy array."
+      ],
+      "metadata": {
+        "id": "dp2kURyyYlT2"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "from sklearn.metrics import jaccard_score\n",
+        "\n",
+        "from scipy.spatial.distance import pdist, squareform\n",
+        "#pdist (pairs distance)\n"
+      ],
+      "metadata": {
+        "id": "1eFRxLjsii8E"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Code for compring Jacard matrix for each movie"
+      ],
+      "metadata": {
+        "id": "ZfWbzzSreFRD"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Import functions from scipy\n",
+        "from scipy.spatial.distance import pdist, squareform\n",
+        "\n",
+        "# Calculate all pairwise distances\n",
+        "jaccard_distances = pdist(movie_cross_table.values, metric='jaccard')\n",
+        "\n",
+        "# Convert the distances to a square matrix\n",
+        "jaccard_similarity_array = 1 - squareform(jaccard_distances)\n",
+        "\n",
+        "# Wrap the array in a pandas DataFrame\n",
+        "jaccard_similarity_df = pd.DataFrame(jaccard_similarity_array, index=movie_cross_table.index, columns=movie_cross_table.index)\n",
+        "\n",
+        "# Print the top 5 rows of the DataFrame\n",
+        "print(jaccard_similarity_df.head())"
+      ],
+      "metadata": {
+        "id": "q7rJahXcZ12S"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Text based Recommendations"
+      ],
+      "metadata": {
+        "id": "rzNJED8orDR5"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "TF-IDF --- Term Frequency Inverse Document /  == (Count(word Occurences)/Total Words in the document) / log (# of Doc words in the document / Total # of Docs)"
+      ],
+      "metadata": {
+        "id": "S1HkWRVzZrFw"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "###Instantiate the TF-IDF model"
+      ],
+      "metadata": {
+        "id": "pQNb7yOpyeEF"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "You now have a way of trainsforming free bodies of text into structured arrays, with each relevant word being stored as a feature. This can be used to to measure similarities between items and make recommendations, even for items that you have no structured attribute data for."
+      ],
+      "metadata": {
+        "id": "XSjQLxCBzMv9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+        "\n",
+        "# Instantiate the vectorizer object to the vectorizer variable\n",
+        "#vectorizer = TfidfVectorizer()\n",
+        "vectorizer = TfidfVectorizer(min_df=2, max_df=0.7)\n",
+        "# Fit and transform the plot column\n",
+        "vectorized_data = vectorizer.fit_transform(df_plots['Plot'])\n",
+        "\n",
+        "# Look at the features generated\n",
+        "print(vectorizer.get_feature_names())"
+      ],
+      "metadata": {
+        "id": "PCcZPMjeeMHX"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "z28zlcSHyiBe"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
